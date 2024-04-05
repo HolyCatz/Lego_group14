@@ -11,8 +11,9 @@ BASE_MOTOR_SPEED = 60
 GRIPPER_MOTOR_SPEED = 200
 ELBOW_MOTOR_SPEED = 60
 
-SENSOR_HIGHT = 63
+SENSOR_HIGHT = 60
 GROUND_HIGHT = 30
+ELEVATED_HEIGHT = 45
 
 BASESWITCH_OFFSET = 7
 
@@ -203,6 +204,7 @@ class Robot:
             blockPresent = self.drawColor(color)
             print(color)
             print(self.elbow_sensor.reflection())
+            print(self.elbow_sensor.rgb())
         else:
             color = None
         
@@ -217,7 +219,31 @@ class Robot:
 
 # endregion
 
+    def pickUpFromHight(self):
 
+            self.goToPickUp()
+            self.openGripper()
+            self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, ELEVATED_HEIGHT, then=Stop.HOLD)
+            blockPresent = self.closeGripper()
+            self.elbowUp()
+
+            if blockPresent:
+                color = self.elbow_sensor.color()
+                blockPresent = self.drawColor(color)
+                print(color)
+                print(self.elbow_sensor.reflection())
+                print(self.elbow_sensor.hsv())
+            else:
+                color = None
+
+            wait(100)
+            print("Last gripper: ", self.gripper_motor.angle())
+            if (self.gripper_motor.angle() > -10 or color == None):
+                blockPresent = False
+            else:
+                blockPresent = True
+
+            return blockPresent, color
 
 
 
@@ -226,14 +252,14 @@ class Robot:
 
 def main():
 
-
+    test = 0
     robot = Robot(SENSOR_HIGHT, BASESWITCH_OFFSET)
     dropoffzone = 0
-
-        
-
     while True:
-        blockPresent, color = robot.defaultPickUpBlock()
+        if test == 1:
+            blockPresent, color = robot.pickUpFromHight()
+        else:
+            blockPresent, color = robot.defaultPickUpBlock()
         wait(100)
         if (blockPresent):
             blockPresent = not robot.dropOffAtColor(color)
@@ -248,3 +274,37 @@ def main():
 
 if __name__== "__main__":
     main() 
+
+'''from pybricks.hubs import EV3Brick
+from pybricks.ev3devices import ColorSensor
+from pybricks.parameters import Port 
+ev3 = EV3Brick()
+color_sensor = ColorSensor(Port.S2)
+
+def detect_color(red, green, blue):
+    colors = {
+        "Red": (20, 0, 0),
+        "Green": (0, 20, 0),
+        "Blue": (0, 0, 20),
+        "Yellow": (20, 20, 0),
+        "Unknown": (-1, -1, -1) 
+    }
+    detected_color = "Unknown"
+    for color, (r_range, g_range, b_range) in colors.items():
+        if r_range <= red <= r_range + 100 and \
+           g_range <= green <= g_range + 100 and \
+           b_range <= blue <= b_range + 100:
+            detected_color = color
+            break
+
+    return detected_color
+
+def print_detected_color():
+    red, green, blue = color_sensor.rgb()
+
+    color_name = detect_color(red, green, blue)
+
+    print("Detected color:", color_name)
+
+while True: 
+    print_detected_color()'''
