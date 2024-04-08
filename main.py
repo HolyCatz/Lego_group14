@@ -11,9 +11,9 @@ BASE_MOTOR_SPEED = 60
 GRIPPER_MOTOR_SPEED = 200
 ELBOW_MOTOR_SPEED = 60
 
-SENSOR_HIGHT = 60
+SENSOR_HIGHT = 67
 GROUND_HIGHT = 30
-ELEVATED_HEIGHT = 45
+ELEVATED_HEIGHT = 58
 
 BASESWITCH_OFFSET = 7
 
@@ -200,11 +200,9 @@ class Robot:
         self.elbowUp()
 
         if blockPresent:
-            color = self.elbow_sensor.color()
+            color, size = self.getColor()
             blockPresent = self.drawColor(color)
-            print(color)
-            print(self.elbow_sensor.reflection())
-            print(self.elbow_sensor.rgb())
+            
         else:
             color = None
         
@@ -221,18 +219,17 @@ class Robot:
 
     def pickUpFromHight(self):
 
+            self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, ELEVATED_HEIGHT + 10, then=Stop.HOLD)
             self.goToPickUp()
             self.openGripper()
             self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, ELEVATED_HEIGHT, then=Stop.HOLD)
             blockPresent = self.closeGripper()
-            self.elbowUp()
+            self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, SENSOR_HIGHT - 3, then=Stop.HOLD) 
 
             if blockPresent:
-                color = self.elbow_sensor.color()
+                color, size = self.getColor()
                 blockPresent = self.drawColor(color)
-                print(color)
-                print(self.elbow_sensor.reflection())
-                print(self.elbow_sensor.hsv())
+                
             else:
                 color = None
 
@@ -246,16 +243,62 @@ class Robot:
             return blockPresent, color
 
 
+    def getColor(self):
+        size = "SMALL"
+        color = self.elbow_sensor.color()
+        brickSize = self.elbow_sensor.reflection()
+        #print(color)
+        if color == Color.RED:
+            if brickSize > 50:
+                size = "BIG"
+        elif color == Color.GREEN or color == Color.BLUE or color == Color.BLACK:
+            if brickSize > 9:
+                size = "BIG"
+            colorTest = self.elbow_sensor.rgb()
+            print(colorTest)
+            if colorTest[2] > colorTest[1]:
+                color = Color.BLUE
+            else:
+                color = Color.GREEN
+            
+        elif color == Color.YELLOW or color == Color.BROWN:
+            color = Color.YELLOW
+            if brickSize < 50:
+                size = "BIG"
+        else:
+            color = None
+            size = "UNKNOWN"
+        return color, size
 
+    def getSizeColorAt(self,index):
+        self.goToDropOff(index)
+        self.openGripper()
+        self.elbowDown()
+        blockPresent = self.closeGripper()
+        self.elbowUp()
 
+        if blockPresent:
+            color, size = self.getColor()
+            blockPresent = self.drawColor(color)
+            
+        else:
+            color = None
+            size = "UNKNOWN"
 
+        self.elbowDown()
+        self.openGripper()
+        self.elbowUp()
+        self.goToPickUp()
+
+        return color, size
 
 def main():
 
-    test = 0
+    test = 1
     robot = Robot(SENSOR_HIGHT, BASESWITCH_OFFSET)
     dropoffzone = 0
     while True:
+        
         if test == 1:
             blockPresent, color = robot.pickUpFromHight()
         else:
@@ -274,37 +317,3 @@ def main():
 
 if __name__== "__main__":
     main() 
-
-'''from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import ColorSensor
-from pybricks.parameters import Port 
-ev3 = EV3Brick()
-color_sensor = ColorSensor(Port.S2)
-
-def detect_color(red, green, blue):
-    colors = {
-        "Red": (20, 0, 0),
-        "Green": (0, 20, 0),
-        "Blue": (0, 0, 20),
-        "Yellow": (20, 20, 0),
-        "Unknown": (-1, -1, -1) 
-    }
-    detected_color = "Unknown"
-    for color, (r_range, g_range, b_range) in colors.items():
-        if r_range <= red <= r_range + 100 and \
-           g_range <= green <= g_range + 100 and \
-           b_range <= blue <= b_range + 100:
-            detected_color = color
-            break
-
-    return detected_color
-
-def print_detected_color():
-    red, green, blue = color_sensor.rgb()
-
-    color_name = detect_color(red, green, blue)
-
-    print("Detected color:", color_name)
-
-while True: 
-    print_detected_color()'''
