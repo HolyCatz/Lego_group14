@@ -178,7 +178,6 @@ class Robot:
             if brickSize > 50:
                 size = "BIG"
         else:
-            color = None
             size = "UNKNOWN"
         return color, size
 
