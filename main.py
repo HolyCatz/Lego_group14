@@ -5,27 +5,24 @@ from pybricks.ev3devices import Motor, TouchSensor, ColorSensor
 from pybricks.parameters import Port, Stop, Direction, Color, Button
 from pybricks.tools import wait
 
-
 MAX_BASE_ANGLE = 260        # NOTE: Set the angle to an apropriate value
 
 BASE_MOTOR_SPEED = 60
 GRIPPER_MOTOR_SPEED = 200
 ELBOW_MOTOR_SPEED = 60
 
-SENSOR_HIGHT = 58
+ZONE_ANGLES = [0, 100, 150, 200]
+
+SENSOR_HIGHT = 63
+TOP_HIGHT = 77
 GROUND_HIGHT = 30
-ELEVATED_HEIGHT = 55
+ELEVATED_HEIGHT = 58
 
 BASESWITCH_OFFSET = 7
 
-DROP_OFF1   = 100
-DROP_OFF2   = 150
-DROP_OFF3   = 200
-PICKUP      = 0
-
-PICKUP_ELEVATED = False
 
 DEBOUNCE_TIME = 300         # Wait time after a button press so it only get's registered once
+
 
 def formatColor(color):
     '''Takes in a Color obj or String and retruns the oposite type.'''
@@ -58,13 +55,26 @@ def formatColor(color):
             txt = "Unknown"
         return txt
     else:
-        return "Error"
+        return "Unknown"
+
+
+class Zone:
+    hight = GROUND_HIGHT
+    color = Color.RED
+
+    def __init__(self, _angle):
+        self.angle = _angle
 
 class Robot:
-    
-    #region Initialize Robot
+    menu = True
+    pickUpIndex = 0
+    wait_time = 3000                # Time between periodic checks
+    sensor_hight = SENSOR_HIGHT     
+    top_hight = TOP_HIGHT           # Hight of claw so it doesn't hit elevated objects
 
-    def __init__(self, elbow_end, base_offset) -> None:
+    # region Initialize
+
+    def __init__(self, base_offset) -> None:
         self.ev3 = EV3Brick()
         self.gripper_motor = Motor(Port.A)
         self.elbow_motor = Motor(Port.B, Direction.COUNTERCLOCKWISE, [8, 40])
@@ -75,16 +85,9 @@ class Robot:
         self.elbow_motor.control.limits(speed=ELBOW_MOTOR_SPEED, acceleration=120)
         self.base_motor.control.limits(speed=BASE_MOTOR_SPEED, acceleration=120)
 
-        self.wait_time = 3000            # NEW:: Time between knowing a block is not present and checking again
-
         self.initGripper()
-        self.initElbow(elbow_end)
+        self.initElbow()
         self.initBase(base_offset)
-
-
-        self.pickUp = PICKUP
-        self.dropOffAngle = [DROP_OFF1, DROP_OFF2, DROP_OFF3]
-        self.dropOffColor = [Color.BLUE, Color.RED, Color.GREEN]
 
 
     def initGripper(self):
@@ -93,11 +96,11 @@ class Robot:
         self.gripper_motor.reset_angle(0)
         self.gripper_motor.run_target(GRIPPER_MOTOR_SPEED, -90, then=Stop.COAST)      # Leave the gripper open
 
-    def initElbow(self, end_angle):
+    def initElbow(self):
         # Initialize the elbow motor
         self.elbow_motor.run_until_stalled(-ELBOW_MOTOR_SPEED, then=Stop.HOLD, duty_limit=20)
         self.elbow_motor.reset_angle(0)
-        self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, end_angle, then=Stop.HOLD)
+        self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, self.top_hight, then=Stop.HOLD)
 
     def initBase(self, switch_offset):
         # Initialize base motot to where the switch is pressed with an offset
@@ -108,50 +111,107 @@ class Robot:
         self.base_motor.run_target(BASE_MOTOR_SPEED, switch_offset, then=Stop.COAST)
         self.base_motor.reset_angle(0)
 
-    # endregion
+
+    def runMotor(self, motor, speed, target, stop_action=Stop.HOLD):
+        print(8)
+        print(self.ev3.buttons.pressed())
+        motor.run_target(speed, target, then=stop_action, wait=False)
+        print(9)
+
+        while not(motor.angle() < target + 5 and motor.angle() > target -5):
+            wait(50)
+            if Button.CENTER in self.ev3.buttons.pressed():
+                motor.hold()
+                wait(DEBOUNCE_TIME)
+                while True:
+                    # FIX:: Draw instructions here, Maybe put the motor on coast
+                    print(90)
+                    button_press = self.ev3.buttons.pressed()
+                    if Button.DOWN in button_press:
+                        wait(DEBOUNCE_TIME)
+                        self.menu = True
+                    if Button.CENTER in button_press:
+                        wait(DEBOUNCE_TIME)
+                        self.runMotor(motor, speed, target, stop_action)
+                        return
+                    wait(50)
+        
+
+
+    def stallMotor(self, motor, speed, target, stop_action=Stop.HOLD):
+        # Check:: if it works
+        motor.run_target(speed, target, then=stop_action, wait=False)
+        while not motor.control.stalled() and not(motor.angle() < target + 5 and motor.angle() > target -5):
+            wait(50)
+            if Button.CENTER in self.ev3.buttons.pressed():
+                # Check:: Should it be hold
+                motor.stop() 
+                wait(DEBOUNCE_TIME)
+                while True:
+                    # FIX:: Draw instructions here, Maybe put the motor on coast
+                    button_press = self.ev3.buttons.pressed()
+                    if Button.DOWN in button_press:
+                        wait(DEBOUNCE_TIME)
+                        self.menu = True
+                    if Button.CENTER in button_press:
+                        wait(DEBOUNCE_TIME)
+                        self.stallMotor(motor, speed, target, stop_action)
+                        return
+                    wait(50)
+        motor.hold()
+
+    def wait(self, time):
+        waited = 0
+        while waited < time:
+            wait(10)
+            waited += 10
+            if Button.CENTER in self.ev3.buttons.pressed():
+                wait(DEBOUNCE_TIME)
+                
+                while True:
+                    button_press = self.ev3.buttons.pressed()
+                    if Button.DOWN in button_press:
+                        wait(DEBOUNCE_TIME)
+                        self.menu = True
+                    if Button.CENTER in button_press:
+                        wait(DEBOUNCE_TIME)
+                        break
+
+
 
     def openGripper(self):
-        if self.elbow_motor.angle() > -90:
-            self.gripper_motor.run_target(GRIPPER_MOTOR_SPEED, -90, then=Stop.COAST)
+        if self.elbow_motor.angle() > -86:
+            print(7)
+            self.runMotor(self.gripper_motor, GRIPPER_MOTOR_SPEED, -86, stop_action=Stop.COAST)        
 
     def closeGripper(self):
-        # Close the gripper untill motor stalls and holds it there
-        self.gripper_motor.run_until_stalled(GRIPPER_MOTOR_SPEED, then=Stop.HOLD, duty_limit=45)
-
+        self.stallMotor(self.gripper_motor, GRIPPER_MOTOR_SPEED, 0)
         if (self.gripper_motor.angle() < -5):
             return True
-        else:
-            return False
+        return False
     
-    
-    def turnBase(self, angle):
-        # Turn the base to a desired angle and hold
-        if (angle >= 0 and angle <= MAX_BASE_ANGLE):  # Only let the Base turn within safe range
-            self.base_motor.run_target(BASE_MOTOR_SPEED, angle, then=Stop.HOLD)
+    def turnBase(self, target):
+        '''Turns base motor to target angle if int or to Zone'''
+        if isinstance(target, int):
+            target_angle = target
+        elif isinstance(target, Zone):
+            target_angle = target.angle
 
-   
-    def elbowUp(self):
-        # if self.elbow_motor.angle() < SENSOR_HIGHT:
-        self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, SENSOR_HIGHT, then=Stop.HOLD) 
+        if (self.base_motor.angle() != target_angle):
+            self.runMotor(self.base_motor, BASE_MOTOR_SPEED, target_angle)
 
-    def elbowDown(self, elevated=False):
-        if elevated:
-            self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, ELEVATED_HEIGHT, then=Stop.HOLD)
-        else:
-            self.elbow_motor.run_target(ELBOW_MOTOR_SPEED, GROUND_HIGHT, then=Stop.HOLD)
-    
+    def moveElbow(self, target = GROUND_HIGHT, sensor = False, top = False):
+        if sensor:
+            target_hight = self.sensor_hight
+        elif top:
+            target_hight = self.top_hight
+        elif isinstance(target, int):
+            target_hight = target
+        elif isinstance(target, Zone):
+            target_hight = target.hight
 
-    def goToPickUp(self):
-        self.turnBase(self.pickUp)
-
-    def goToDropOff(self, index):
-        self.turnBase(self.dropOffAngle[index])
-
-    def dropBlock(self, elevated=False):
-        self.elbowDown(elevated)
-        self.openGripper()
-        self.elbowUp()
-
+        if self.elbow_motor.angle() != target_hight:
+            self.runMotor(self.elbow_motor, ELBOW_MOTOR_SPEED, target_hight)
 
     def getColor(self):
         size = "SMALL"
@@ -181,88 +241,63 @@ class Robot:
             size = "UNKNOWN"
         return color, size
 
-
-    def pickUpBlock(self):
-        self.elbowUp()
-        self.goToPickUp()
-        self.openGripper()
-
-        self.elbowDown(PICKUP_ELEVATED)
-        blockPresent = self.closeGripper()
-        self.elbowUp()
-
-        if blockPresent:
-            color, size = self.getColor()
-            print("Color: ", formatColor(color), ", Size: ", size)
-        else:
-            color = None
-
-        wait(100) # NOTE:: Not sure if needed
-        if (self.gripper_motor.angle() > -10 or color == None):
-            blockPresent = False
-        else:
-            blockPresent = True   
-
-        return blockPresent, color
+    def dropOffblock(self, zones, color):
+        '''Drops off block at corresponding zone or puts it back down in pick up zone.'''
+        found_zone = False
+        for i, zone in enumerate(zones): 
+            if i != self.pickUpIndex and zone.color == color:            
+                self.turnBase(zone)
+                self.moveElbow(zone)
+                self.openGripper()
+                self.moveElbow(top=True)
+                self.turnBase(zones[self.pickUpIndex])
+                found_zone = True
+                break
+        if not found_zone:
+            self.moveElbow(zones[self.pickUpIndex])
+            self.openGripper()
+            self.moveElbow(top=True)
 
 
-    def dropOffAtColor(self, color):
-        if color in self.dropOffColor:
-            self.goToDropOff(self.dropOffColor.index(color))
-            blockColor = self.elbow_sensor.color()  # NEW:: check for dropped block
-            if (blockColor != None):
-                self.dropBlock()
-            return True
-        return False
-    
-
-    def getSizeColorAt(self, index):
+    def getSizeColorAt(self, zone):
         color = None
         size = "UNKNOWN"
-        index -= 1
-        
+
         self.openGripper()
-        
-        if index < 0:
-            self.goToPickUp()
-            self.elbowDown(PICKUP_ELEVATED)
-        else:
-            self.goToDropOff(index)
-            self.elbowDown()
+        self.moveElbow(top=True)
+        self.turnBase(zone)
+        self.moveElbow(zone)
 
         blockPresent = self.closeGripper()
-        self.elbowUp()
+
+
+        self.moveElbow(sensor=True)
+        block_color, block_size = self.getColor()
 
         if blockPresent:
-            color, size = self.getColor()
-            if index < 0:
-                self.dropBlock(PICKUP_ELEVATED)
-            else:
-                self.dropBlock()
+            self.moveElbow(zone)
+            self.openGripper()
 
-        if color == None:
-            color = None 
-        
-        return color, size
-        
+        self.moveElbow(top=True)
 
+        return block_color, block_size
 
-        
-
-    def menuDraw(self):
+    def menuDraw(self, zones):
         self.main_menu = ["Start", "Set Drop Off", "Set Time", "Get Color", "Stop"]
-        self.set_dropoff = ["Zone 1: ", "Zone 2: ", "Zone 3: "]
-        self.set_color = ["Red", "Green", "Blue", "Yellow"]
+        self.set_dropoff = ["Zone 1: ", "Zone 2: ", "Zone 3: ", "Zone 4: "]
+        self.set_color = ["Red", "Green", "Blue", "Yellow", "PICKUP"]
         self.set_time = ["Check: "]
-        self.get_color = ["Pick up", "Zone 1", "Zone 2", "Zone 3"]
+        self.get_color = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
 
         menu_title = ["Main Menu", "Set Dropoff Color", "", "Set Time", "Get Color At"]
+        title_offset = 30
 
 
         self.menu_items = [self.main_menu, self.set_dropoff, self.set_color, self.set_time, self.get_color]
 
         self.ev3.screen.clear()
 
+        title_offset = 30
         if menu_title[self.menu_selection] != "":
             self.ev3.screen.draw_text(0,0, menu_title[self.menu_selection])
         else:
@@ -271,7 +306,10 @@ class Robot:
 
         for index, item in enumerate(self.menu_items[self.menu_selection]):
             if (self.menu_selection == 1):
-                item += formatColor(self.dropOffColor[index])
+                if index == self.pickUpIndex:
+                    item += "Pickup"
+                else:
+                    item += formatColor(zones[index].color)
 
 
             if index == self.item_selection:
@@ -283,12 +321,13 @@ class Robot:
                     #print white back with wite background on same line after item
                 else:
                     # Highlight the selected item by inverting the colors
-                    self.ev3.screen.draw_text(0, index * 20 + 30, item, text_color=Color.WHITE, background_color=Color.BLACK)
+                    self.ev3.screen.draw_text(0, index * 20 + title_offset, item, text_color=Color.WHITE, background_color=Color.BLACK)
             else:
-                self.ev3.screen.draw_text(0, index * 20 + 30, item)
+                self.ev3.screen.draw_text(0, index * 20 + title_offset, item)
     
-    
-    def menuLoop(self):
+
+
+    def menuLoop(self, zones):
         self.menu_selection = 0
         self.item_selection = 0
         self.time_check_selection = False # If the time is being changed
@@ -302,7 +341,7 @@ class Robot:
 
         while(True):
             pressed = self.ev3.buttons.pressed()
-            self.menuDraw()
+            self.menuDraw(zones)
 
             if Button.DOWN in pressed:
                 if not self.time_check_selection:
@@ -323,8 +362,10 @@ class Robot:
         
             elif Button.CENTER in pressed:
                 # Main menu
+                wait(DEBOUNCE_TIME)
                 if self.menu_selection == 0:
                     if self.item_selection == 0:    # Select Start
+                        wait(DEBOUNCE_TIME)
                         return True
                     elif self.item_selection == 1:    # Select change color
                         self.menu_selection = 1
@@ -351,7 +392,10 @@ class Robot:
                 
                 # Choose color for zone
                 elif self.menu_selection == 2:
-                    self.dropOffColor[selected_zone] = color_index[self.item_selection]
+                    if self.item_selection == 4:
+                        self.pickUpIndex = selected_zone
+                    else:
+                        zones[selected_zone].color = color_index[self.item_selection]
                     self.menu_selection = 1
                     self.item_selection = selected_zone
 
@@ -362,7 +406,8 @@ class Robot:
 
 
                 elif self.menu_selection == 4:
-                    block_color, block_size = self.getSizeColorAt(self.item_selection)
+                    wait(DEBOUNCE_TIME)
+                    block_color, block_size = self.getSizeColorAt(zones[self.item_selection])
                     self.ev3.screen.clear()
                     self.ev3.screen.draw_text(0,0, self.get_color[self.item_selection])
                     self.ev3.screen.draw_text(0, 30, "Color: " + formatColor(block_color))
@@ -376,9 +421,9 @@ class Robot:
                         if Button.CENTER in temp_pressed:
                             break
                         wait(DEBOUNCE_TIME)
+                
 
                 
-                wait(DEBOUNCE_TIME)
 
         
             elif Button.LEFT in pressed:
@@ -398,45 +443,60 @@ class Robot:
                 wait(DEBOUNCE_TIME)
             else:
                 wait(100)
-
+        
+        wait(DEBOUNCE_TIME)
 
 def main():
-    robot = Robot(SENSOR_HIGHT, BASESWITCH_OFFSET)
+    robot = Robot(BASESWITCH_OFFSET)
 
-    openMenu = True
-    
+    zones = []
+    for angle in ZONE_ANGLES:
+        zones.append(Zone(angle))
+
+    zones[2].color = Color.BLUE                 # Random default color
+    zones[3].color = Color.GREEN                # Random default color
+
+    robot.moveElbow(top=True)
+    robot.turnBase(zones[robot.pickUpIndex])    # Place arm over pick up zone
+
+
     while True:
-        if openMenu:
-            startRobot = robot.menuLoop()
+        if robot.menu:
+            print(1)
+            startRobot = robot.menuLoop(zones)
+            print(2)
             if not startRobot:
+                print(4)
                 break
-            openMenu = False
+            robot.menu = False
 
-        blockPresent, color = robot.pickUpBlock()
-
-        wait(100) # NOTE:: Not sure if needed
-
-        buttonPress = robot.ev3.buttons.pressed()
-        if Button.LEFT in buttonPress:
-            openMenu = True
-
-        if blockPresent:
-            blockPresent = not robot.dropOffAtColor(color)
-
-        if (blockPresent and robot.elbow_sensor.color() != None):
-            # Block color does not match any of the drop off zones
-            wait(500)
-            robot.dropBlock(PICKUP_ELEVATED)
-
-        # NOTE: Should move to pickup before the wait
-
-        buttonPress = robot.ev3.buttons.pressed()
-        if Button.LEFT in buttonPress:
-            openMenu = True
-
-        wait(robot.wait_time)
+            robot.turnBase(zones[robot.pickUpIndex])
+            print(3)
+        print(5)
+        
 
 
+        robot.openGripper()
+        print(6)
+
+        robot.moveElbow(zones[robot.pickUpIndex])
+        print(10)
+        block_present = robot.closeGripper()
+        print(11)
+        if block_present:
+            print(12)
+            robot.moveElbow(sensor=True)
+            print(13)
+            block_color, block_size = robot.getColor()
+            print(14)
+            block_present = False if block_color == None else True
+
+        print()
+        robot.moveElbow(top=True)
+
+        if block_present:
+            robot.dropOffblock(zones, block_color)
+        robot.wait(robot.wait_time)
 
 if __name__== "__main__":
     main() 
