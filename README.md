@@ -38,13 +38,13 @@ This project involves a Python script that operates a robotic arm using the pybr
 - [x] **US06:** As a customer, I want the robot to be able to pick up items from elevated positions.
 - [x] **US07/08:** As a customer, I want to be able to calibrate a maximum of three different colors and assign them to specific drop-off zones.
 - [x] **US09:** As a customer, I want the robot to check the pickup location periodically to see if a new item has arrived.
-- [ ] **US10:** As a customer, I want the robots to sort items at a specific time.
+- [x] **US10:** As a customer, I want the robots to sort items at a specific time.
 - [ ] **US11:** As a customer, I want two robots (from two teams) to communicate and work together on items sorting without colliding with each other.
 - [ ] **US12:** As a customer, I want to be able to manually set the locations and heights of one pick-up zone and two drop-off zones. (Implemented either by manually dragging the arm to a position or using buttons).
 - [x] **US13:** As a customer, I want to easily reprogram the pickup and drop off zone of the robot.
 - [x] **US14:** As a customer, I want to easily change the schedule of the robot pick up task.
 - [x] **US15:** As a customer, I want to have an emergency stop button, that immediately terminates the operation of the robot safely.
-- [ ] **US16:** As a customer, I want the robot to be able to pick an item up and put it in the designated drop-off location within 5 seconds.
+- [x] **US16:** As a customer, I want the robot to be able to pick an item up and put it in the designated drop-off location within 5 seconds.
 - [ ] **US17:** As a customer, I want the robot to pick up items from a rolling belt and put them in the designated positions based on color and shape.
 - [x] **US18:** As a customer, I want to have a pause button that pauses the robot's operation when the button is pushed and then resumes the program from the same point when I push the button again.
 - [ ] **US19:** As a customer, I want a very nice dashboard to configure the robot program and start some tasks on demand.
