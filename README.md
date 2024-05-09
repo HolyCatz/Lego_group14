@@ -25,7 +25,7 @@ The script accepts various arguments to control the behavior of the robotic arm,
 
 ## Features
 
-The following user stories have been implemented in this project:
+The following user stories were requested in this project:
 - [x] US01: As a customer, I want the robot to pick up items from a designated position.
 - [x] US02: As a customer, I want the robot to drop items off at a designated position.
 - [x] US03: As a customer, I want the robot to be able to determine if an item is present at a given location.
