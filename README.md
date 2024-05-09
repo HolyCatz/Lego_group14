@@ -1,29 +1,31 @@
-# PA1473 - Software Development: Agile Project 
-DELETE----Template information
-This template should help your team write a good readme-file for your project. (The file is called
-README.md in your project directory.)
-You are of course free to add more sections to your readme if you want to.
-Readme-files on GitHub are formatted using Markdown. You can find information about how to format
-using Markdown here: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-
-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
-Your readme-file should include the following sections: ----
+# PA1473 - Software Development: Agile Project (Template)
+
 ## Introduction
-This part should give a general introduction to your project.
+
+This project is a Python script designed for controlling a robotic arm using the pybricks-micropython library on an EV3 Brick. The script allows the robot to perform various tasks such as picking up, sorting, and dropping off objects based on their color and size.
+
 ## Getting started
-This section is supposed to guide a new developer through the steps of how to set up the project and
-install the dependencies they need to start developing.
-### Environment and Extensions:
-Using Visual Studio Code
-LEGO MINDSTORMS EV3 MICROPYTHON V2.0.0
+
+To set up the project and install the dependencies, follow these steps:
+1. Ensure you have an EV3 Brick with the pybricks-micropython firmware installed.
+2. Clone this repository to your local machine.
+3. Connect your EV3 Brick to your computer via USB.
+4. Upload and run the Python script (`main.py`) to your EV3 Brick.
+
 
 ## Building and running
-This is where you explain how to make the project run. What is your startup procedure? Does the
-program accept different arguments to do different things?
-You should also describe how to operate your program. Does it need manual input before it starts
-picking up and sorting the items?
+
+To run the project, follow these steps:
+1. Ensure the EV3 Brick is powered on and the script is uploaded.
+2. Press the center button on the EV3 Brick to start the script.
+3. Follow the on-screen instructions to navigate the menu and control the robotic arm.
+4. Press and hold the center button to pause the script or trigger an emergency stop.
+
+The script accepts various arguments to control the behavior of the robotic arm, such as setting drop-off zones, adjusting time intervals, and retrieving color information.
+
 ## Features
-Lastly, you should write which of the user stories you did and didn't develop in this project, in the form
-of a checklist. Like this:
+
+The following user stories have been implemented in this project:
 - [x] US01: As a customer, I want the robot to pick up items from a designated position.
 - [x] US02: As a customer, I want the robot to drop items off at a designated position.
 - [x] US03: As a customer, I want the robot to be able to determine if an item is present at a given location.
@@ -37,7 +39,7 @@ of a checklist. Like this:
 - [ ] US12: As a customer, I want to be able to manually set the locations and heights of one pick-up zone and two drop-off zones. (Implemented either by manually dragging the arm to a position or using buttons).
 - [x] US13: As a customer, I want to easily reprogram the pickup and drop off zone of the robot.
 - [x] US14: As a customer, I want to easily change the schedule of the robot pick up task.
-- [ ] US15: As a customer, I want to have an emergency stop button, that immediately terminates the operation of the robot safely.
+- [x] US15: As a customer, I want to have an emergency stop button, that immediately terminates the operation of the robot safely.
 - [ ] US16: As a customer, I want the robot to be able to pick an item up and put it in the designated drop-off location within 5 seconds.
 - [ ] US17: As a customer, I want the robot to pick up items from a rolling belt and put them in the designated positions based on color and shape.
 - [x] US18: As a customer, I want to have a pause button that pauses the robot's operation when the button is pushed and then resumes the program from the same point when I push the button again.
