@@ -1,4 +1,4 @@
-# PA1473 - Software Development: Agile Project (Template)
+# PA1473 - Software Development: Agile Project 
 
 ## Introduction
 
