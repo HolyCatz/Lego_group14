@@ -3,7 +3,7 @@
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import Motor, TouchSensor, ColorSensor
 from pybricks.parameters import Port, Stop, Direction, Color, Button
-from pybricks.tools import wait, StopWatch
+from pybricks.tools import wait
 
 MAX_BASE_ANGLE = 260        # NOTE: Set the angle to an apropriate value
 
@@ -587,10 +587,6 @@ class Robot:
 
 
 def main():
-    watch = StopWatch()
-
-    print(int((watch.time()/1000)/60),int((watch.time()/1000) % 60),watch.time()/1000 )
-
     robot = Robot(BASESWITCH_OFFSET)
 
     zones = []
