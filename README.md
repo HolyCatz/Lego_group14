@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project involves a Python script that operates a robotic arm using the pybricks-micropython library on an EV3 Brick. The robotic arm is programmed to execute tasks such as picking up, sorting, and dropping objects based on specific attributes like color, enhancing automation and efficiency in handling tasks.
+This project involves a Python script that operates a robotic arm using the pybricks-micropython library on an EV3 Brick. The robotic arm is programmed to execute tasks such as picking up, sorting, and dropping objects based on specific attributes like color.
 
 ## Getting started
 
