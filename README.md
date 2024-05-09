@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project involves a Python script that operates a robotic arm using the pybricks-micropython library on an EV3 Brick. The robotic arm is programmed to execute tasks such as picking up, sorting, and dropping objects based on specific attributes like color and size, enhancing automation and efficiency in handling tasks.
+This project involves a Python script that operates a robotic arm using the pybricks-micropython library on an EV3 Brick. The robotic arm is programmed to execute tasks such as picking up, sorting, and dropping objects based on specific attributes like color, enhancing automation and efficiency in handling tasks.
 
 ## Getting started
 
@@ -11,7 +11,7 @@ This project involves a Python script that operates a robotic arm using the pybr
 - A computer with USB port and internet access.
 
 **Setup Instructions:**
-1. Clone the project repository to your local machine using `git clone [https://github.com/HolyCatz/Lego_group14](https://github.com/HolyCatz/Lego_group14)`.
+1. Clone the project repository to your local machine using `git clone https://github.com/HolyCatz/Lego_group14`.
 2. Connect the EV3 Brick to your computer using a USB cable.
 3. Transfer the `main.py` script to your EV3 Brick using the provided upload tool or through your preferred IDE that supports EV3 development.
 
