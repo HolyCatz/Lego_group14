@@ -12,12 +12,16 @@ This part should give a general introduction to your project.
 ## Getting started
 This section is supposed to guide a new developer through the steps of how to set up the project and
 install the dependencies they need to start developing.
+### Environment and Extensions:
+Using Visual Studio Code
+LEGO MINDSTORMS EV3 MICROPYTHON V2.0.0
+
 ## Building and running
 This is where you explain how to make the project run. What is your startup procedure? Does the
 program accept different arguments to do different things?
 You should also describe how to operate your program. Does it need manual input before it starts
 picking up and sorting the items?
-# Features
+## Features
 Lastly, you should write which of the user stories you did and didn't develop in this project, in the form
 of a checklist. Like this:
 - [x] US01: As a customer, I want the robot to pick up items from a designated position.
@@ -26,7 +30,7 @@ of a checklist. Like this:
 - [x] US04: As a customer, I want the robot to tell me the color and shape of an item at a designated position.
 - [x] US05: As a customer, I want the robot to drop items off at different locations based on the color of the item.
 - [x] US06: As a customer, I want the robot to be able to pick up items from elevated positions.
-- [x] US07/08 calibrate maximum of three different colors and assign them to specific drop-off zones.
+- [x] US07/08: As a customer, I want to be able to calibrate a maximum of three different colors and assign them to specific drop-off zones.
 - [x] US09: As a customer, I want the robot to check the pickup location periodically to see if a new item has arrived.
 - [ ] US10: As a customer, I want the robots to sort items at a specific time.
 - [ ] US11: As a customer, I want two robots (from two teams) to communicate and work together on items sorting without colliding with each other.
@@ -34,7 +38,7 @@ of a checklist. Like this:
 - [x] US13: As a customer, I want to easily reprogram the pickup and drop off zone of the robot.
 - [x] US14: As a customer, I want to easily change the schedule of the robot pick up task.
 - [ ] US15: As a customer, I want to have an emergency stop button, that immediately terminates the operation of the robot safely.
-- [x] US16: As a customer, I want the robot to be able to pick an item up and put it in the designated drop-off location within 5 seconds.
+- [ ] US16: As a customer, I want the robot to be able to pick an item up and put it in the designated drop-off location within 5 seconds.
 - [ ] US17: As a customer, I want the robot to pick up items from a rolling belt and put them in the designated positions based on color and shape.
 - [x] US18: As a customer, I want to have a pause button that pauses the robot's operation when the button is pushed and then resumes the program from the same point when I push the button again.
 - [ ] US19: As a customer, I want a very nice dashboard to configure the robot program and start some tasks on demand.
